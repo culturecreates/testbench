@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/testbench/static/css/main.771846f0.css",
-    "main.js": "/testbench/static/js/main.764c4c55.js",
-    "static/media/glyphicons-halflings-regular.svg": "/testbench/static/media/glyphicons-halflings-regular.060b2710bdbbe3dfe48b.svg",
-    "static/media/glyphicons-halflings-regular.ttf": "/testbench/static/media/glyphicons-halflings-regular.4692b9ec53fd5972caa2.ttf",
-    "static/media/glyphicons-halflings-regular.woff": "/testbench/static/media/glyphicons-halflings-regular.82b1212e45a2bc35dd73.woff",
-    "static/media/glyphicons-halflings-regular.eot": "/testbench/static/media/glyphicons-halflings-regular.5be1347c682810f199c7.eot",
-    "static/media/glyphicons-halflings-regular.woff2": "/testbench/static/media/glyphicons-halflings-regular.be810be3a3e14c682a25.woff2",
-    "index.html": "/testbench/index.html",
-    "main.771846f0.css.map": "/testbench/static/css/main.771846f0.css.map",
-    "main.764c4c55.js.map": "/testbench/static/js/main.764c4c55.js.map"
+    "main.css": "/testbench/1.0-draft/static/css/main.dd7f1ef6.css",
+    "main.js": "/testbench/1.0-draft/static/js/main.64545042.js",
+    "static/media/glyphicons-halflings-regular.svg": "/testbench/1.0-draft/static/media/glyphicons-halflings-regular.060b2710bdbbe3dfe48b.svg",
+    "static/media/glyphicons-halflings-regular.ttf": "/testbench/1.0-draft/static/media/glyphicons-halflings-regular.4692b9ec53fd5972caa2.ttf",
+    "static/media/glyphicons-halflings-regular.woff": "/testbench/1.0-draft/static/media/glyphicons-halflings-regular.82b1212e45a2bc35dd73.woff",
+    "static/media/glyphicons-halflings-regular.eot": "/testbench/1.0-draft/static/media/glyphicons-halflings-regular.5be1347c682810f199c7.eot",
+    "static/media/glyphicons-halflings-regular.woff2": "/testbench/1.0-draft/static/media/glyphicons-halflings-regular.be810be3a3e14c682a25.woff2",
+    "index.html": "/testbench/1.0-draft/index.html",
+    "main.dd7f1ef6.css.map": "/testbench/1.0-draft/static/css/main.dd7f1ef6.css.map",
+    "main.64545042.js.map": "/testbench/1.0-draft/static/js/main.64545042.js.map"
   },
   "entrypoints": [
-    "static/css/main.771846f0.css",
-    "static/js/main.764c4c55.js"
+    "static/css/main.dd7f1ef6.css",
+    "static/js/main.64545042.js"
   ]
 }
