@@ -20,7 +20,8 @@ export default class DataExtensionTab extends React.Component {
         entity: undefined,
         property: undefined,
         extendResults: undefined,
-        validationErrors: []
+        validationErrors: [],
+        proposeTypeInput: ''
       };
   }
 
@@ -40,6 +41,20 @@ export default class DataExtensionTab extends React.Component {
       });
   }
 
+  handleProposeTypeInput = (newValue) => {
+    this.setState({ proposeTypeInput: newValue?.name });
+  }
+
+  openProposeWindow = () => {
+    let baseUrl = this.props.service.endpoint;
+    let proposeUrl = baseUrl.replace(/\/?$/, '/extend/propose');
+    let url = new URL(proposeUrl);
+    if (this.state.proposeTypeInput) {
+      url.searchParams.append('type', this.state.proposeTypeInput);
+    }
+    window.open(url.toString(), '_blank');
+  }
+
   formulateQuery() {
       if (this.state.entity !== undefined && this.state.property !== undefined) {
           return {
@@ -56,6 +71,7 @@ export default class DataExtensionTab extends React.Component {
       if (!baseUrl) {
          return '#';
       }
+      baseUrl = `${baseUrl.replace(/\/$/, '')}/extend`;
       let params = {
         extend: JSON.stringify(this.formulateQuery())
       };
@@ -77,8 +93,10 @@ export default class DataExtensionTab extends React.Component {
   submitQuery = (e) => {
         e.preventDefault();
         this.setState({extendResults: 'fetching'});
-        let fetcher = this.props.service.getFetcher();
-        fetcher(this.formulateQueryUrl(), {timeout: 20000})
+         let fetcher = this.props.service.postFetcher();
+         let url = this.props.service.endpoint;
+         url = `${url.replace(/\/$/, '')}/extend`;
+        fetcher({url,queries:JSON.stringify(this.formulateQuery())},{timeout: 20000})
            .then(result => result.json())
            .then(result =>
                this.setState({
@@ -106,16 +124,18 @@ export default class DataExtensionTab extends React.Component {
         } else if (this.state.extendResults === undefined || this.state.entity === undefined || this.state.property === undefined) {
              return (<div />);
         } else {
-             if (this.state.extendResults.rows === undefined) {
-                  return (<span className="resultsPlaceholder">No <code>rows</code> attribute in the response.</span>);
+             if (!Array.isArray(this.state.extendResults.rows)) {
+                  return (<span className="resultsPlaceholder">No <code>rows</code> array in the response.</span>);
              }
-             if (this.state.extendResults.rows[this.state.entity.id] === undefined) {
-                  return (<span className="resultsPlaceholder">Missing <code>rows.{this.state.entity.id}</code> object in the response.</span>);
+             const entityRow = this.state.extendResults.rows.find(row => row.id === this.state.entity.id);
+             if (!entityRow) {
+                  return (<span className="resultsPlaceholder">Missing row for entity <code>{this.state.entity.id}</code> in the response.</span>);
              }
-             if (this.state.extendResults.rows[this.state.entity.id][this.state.property.id] === undefined) {
-                  return (<span className="resultsPlaceholder">Missing <code>rows.{this.state.entity.id}{this.state.property.id}</code> object in the response.</span>);
+             const propertyObj = entityRow.properties.find(prop => prop.id === this.state.property.id);
+             if (!propertyObj) {
+                  return (<span className="resultsPlaceholder">Missing property <code>{this.state.property.id}</code> for entity <code>{this.state.entity.id}</code> in the response.</span>);
              }
-             const values = this.state.extendResults.rows[this.state.entity.id][this.state.property.id];
+             const values = propertyObj.values || [];
              if (values.length === 0) {
                   return (<span className="noResults">No results</span>);
              }
@@ -172,6 +192,20 @@ export default class DataExtensionTab extends React.Component {
                                 <InputGroup.Button><Button onClick={this.submitQuery} type="submit" bsStyle="primary">Submit</Button></InputGroup.Button>
                             </InputGroup>
                         </Col>
+                </FormGroup>
+                <FormGroup controlId="proposeTypeGroup">
+                    <Col componentClass={ControlLabel} sm={2}>Type:</Col>
+                    <Col sm={7}>
+                    <GenericInput
+                                service={this.props.service}
+                                placeholder="Type to fetch on the entity"
+                                value={this.state.proposeTypeInput}
+                                entityClass="type"
+                                onChange={this.handleProposeTypeInput} /> 
+                    </Col>
+                    <Col sm={3}>
+                        <Button onClick={this.openProposeWindow} bsStyle="info" disabled={!this.state.proposeTypeInput}>Propose</Button>
+                    </Col>
                 </FormGroup>
             </Form>
         </Col>

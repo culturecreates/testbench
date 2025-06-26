@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import ListGroupItem from 'react-bootstrap/lib/ListGroupItem';
 
@@ -11,6 +9,7 @@ export default class DataExtensionValue extends React.Component {
 
         get renderedValue() {
             const val = this.props.value;
+            // 1.0-draft: value objects may have id/name, str, float, int, date, lang, dir, description
             if (val.date !== undefined) {
                 return val.date;
             } else if (val.id !== undefined && val.name !== undefined) {
@@ -21,6 +20,8 @@ export default class DataExtensionValue extends React.Component {
                 return val.float;
             } else if (val.int !== undefined) {
                 return val.int;
+            } else if (val.description !== undefined) {
+                return val.description;
             } else {
                 return 'Singleton';
             }
@@ -38,6 +39,8 @@ export default class DataExtensionValue extends React.Component {
                 return 'floating-point number';
             } else if (val.int !== undefined) {
                 return 'integer';
+            } else if (val.description !== undefined) {
+                return 'description';
             } else {
                 return 'empty';
             }
