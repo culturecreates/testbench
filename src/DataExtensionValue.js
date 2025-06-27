@@ -9,7 +9,6 @@ export default class DataExtensionValue extends React.Component {
 
         get renderedValue() {
             const val = this.props.value;
-            // 1.0-draft: value objects may have id/name, str, float, int, date, lang, dir, description
             if (val.date !== undefined) {
                 return val.date;
             } else if (val.id !== undefined && val.name !== undefined) {

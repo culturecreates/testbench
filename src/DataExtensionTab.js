@@ -59,7 +59,7 @@ export default class DataExtensionTab extends React.Component {
       if (this.state.entity !== undefined && this.state.property !== undefined) {
           return {
             ids: [this.state.entity.id],
-            properties: [{id: this.state.property.id}]
+            properties: [{id: this.state.property.name}]
           };
       } else {
           return {};
@@ -131,7 +131,7 @@ export default class DataExtensionTab extends React.Component {
              if (!entityRow) {
                   return (<span className="resultsPlaceholder">Missing row for entity <code>{this.state.entity.id}</code> in the response.</span>);
              }
-             const propertyObj = entityRow.properties.find(prop => prop.id === this.state.property.id);
+             const propertyObj = entityRow.properties.find(prop => prop.id === this.state.property.name);
              if (!propertyObj) {
                   return (<span className="resultsPlaceholder">Missing property <code>{this.state.property.id}</code> for entity <code>{this.state.entity.id}</code> in the response.</span>);
              }
@@ -217,7 +217,6 @@ export default class DataExtensionTab extends React.Component {
                     shouldExpandNode={(keyName, data, level) => true}
                     hideRoot={true} />
             <br />
-            <a href={this.formulateQueryUrl()} title="See query results on the service" target="_blank" rel="noopener noreferrer">View query results on the service</a>
             {this.renderResponseValidationErrors()}
         </Col>
         <Col sm={4}>
