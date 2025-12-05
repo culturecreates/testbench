@@ -1,7 +1,5 @@
 import React from 'react';
-import Button from 'react-bootstrap/lib/Button';
-import InputGroup from 'react-bootstrap/lib/InputGroup';
-import FormControl from 'react-bootstrap/lib/FormControl';
+import { Button, InputGroup, Form } from 'react-bootstrap';
 import ReconcileSuggest from './ReconcileSuggest.js';
 
 /**
@@ -94,17 +92,15 @@ export default class GenericInput extends React.Component {
           : (
                 (this.props.explicitSubmit !== undefined ?
                 <InputGroup>
-                   <FormControl
+                   <Form.Control
                       type="text"
                       placeholder={this.placeholder}
                       value={this.currentId || ''}
                       onChange={this.onIdChange} />
-                    <InputGroup.Button>
-                        <Button onClick={this.onSubmit} type="submit" bsStyle="primary">Submit</Button>
-                    </InputGroup.Button>
+                    <Button onClick={this.onSubmit} type="submit" variant="primary">Submit</Button>
                 </InputGroup>
                 :
-                   <FormControl
+                   <Form.Control
                       type="text"
                       placeholder={this.placeholder}
                       value={this.currentId || ''}

@@ -1,15 +1,9 @@
 import React from 'react';
-import Form from 'react-bootstrap/lib/Form';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import InputGroup from 'react-bootstrap/lib/InputGroup';
-import Button from 'react-bootstrap/lib/Button';
-import Col from 'react-bootstrap/lib/Col';
-import ControlLabel from 'react-bootstrap/lib/ControlLabel';
-import ListGroup from 'react-bootstrap/lib/ListGroup';
+import { Form, InputGroup, Button, Col, ListGroup } from 'react-bootstrap';
 import GenericInput from './GenericInput.js';
 import PropertyPathInput from './PropertyPathInput.js';
 import DataExtensionValue from './DataExtensionValue.js';
-import JSONTree from 'react-json-tree';
+import { JSONTree } from 'react-json-tree';
 import {jsonTheme} from './utils.js';
 import { getSchema } from './JsonValidator.js';
 
@@ -143,8 +137,8 @@ export default class DataExtensionTab extends React.Component {
      <div>
         <Col sm={5}>
             <Form horizontal>
-                <FormGroup controlId="dataExtensionEntity">
-                    <Col componentClass={ControlLabel} sm={2}>Entity:</Col>
+                <Form.Group controlId="dataExtensionEntity">
+                    <Col componentClass={Form.Label} sm={2}>Entity:</Col>
                     <Col sm={10}>
                         <GenericInput
                             service={this.props.service}
@@ -153,9 +147,9 @@ export default class DataExtensionTab extends React.Component {
                             entityClass="entity"
                             onChange={this.onEntityChange} />
                     </Col>
-                </FormGroup>
-                <FormGroup controlId="dataExtensionProperty">
-                    <Col componentClass={ControlLabel} sm={2}>Property:</Col>
+                </Form.Group>
+                <Form.Group controlId="dataExtensionProperty">
+                    <Col componentClass={Form.Label} sm={2}>Property:</Col>
                     <Col sm={10}>
                             <PropertyPathInput
                                 service={this.props.service}
@@ -163,8 +157,8 @@ export default class DataExtensionTab extends React.Component {
                                 value={this.state.property}
                                 onChange={this.onPropertyChange} />
                     </Col>
-                </FormGroup>
-                <FormGroup controlId="submitGroup">
+                </Form.Group>
+                <Form.Group controlId="submitGroup">
                         <Col sm={10} />
                         <Col sm={2}>
                             <InputGroup>
@@ -172,7 +166,7 @@ export default class DataExtensionTab extends React.Component {
                                 <InputGroup.Button><Button onClick={this.submitQuery} type="submit" bsStyle="primary">Submit</Button></InputGroup.Button>
                             </InputGroup>
                         </Col>
-                </FormGroup>
+                </Form.Group>
             </Form>
         </Col>
         <Col sm={3}>

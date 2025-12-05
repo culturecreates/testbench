@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import ListGroupItem from 'react-bootstrap/lib/ListGroupItem';
+import { ListGroup } from 'react-bootstrap';
 
 /**
  * Renders a value returned by a data extension service
@@ -44,8 +44,8 @@ export default class DataExtensionValue extends React.Component {
         }
 
         render() {
-            return (<ListGroupItem key={this.props.key} header={this.renderedValue}>
-                        {this.datatype}
-                </ListGroupItem>);
+            return (<ListGroup.Item key={this.props.key}>
+                        <strong>{this.renderedValue}</strong>: {this.datatype}
+                </ListGroup.Item>);
         }
 }

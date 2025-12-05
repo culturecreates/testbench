@@ -1,7 +1,5 @@
 import React from 'react';
-import Table from 'react-bootstrap/lib/Table';
-import Modal from 'react-bootstrap/lib/Modal';
-import Button from 'react-bootstrap/lib/Button';
+import { Table, Modal, Button } from 'react-bootstrap';
 import FeatureRow from './FeatureRow.js';
 
 class Row {

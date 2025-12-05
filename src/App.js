@@ -6,7 +6,7 @@ import FeatureRow from './FeatureRow.js';
 import TabLink from './TabLink.js';
 import ReconciliationServiceInput from './ReconciliationServiceInput.js';
 import TestBench from './TestBench.js';
-import { HashRouter, Switch, Route, useParams, useHistory } from "react-router-dom";
+import { HashRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
 
 
 function TestbenchTab({ servicesMap, onEndpointChange }) {
@@ -19,11 +19,11 @@ function TestbenchTab({ servicesMap, onEndpointChange }) {
       testBench = (<TestBench service={service} key={`testbench-{endpoint}`}/>);
    }
 
-   let history = useHistory();
+   let navigate = useNavigate();
    let handleChange = function (service) {
       onEndpointChange(service);
       if (service) {
-        history.push(`/client/${encodeURIComponent(service.endpoint)}`);
+        navigate(`/client/${encodeURIComponent(service.endpoint)}`);
       }
    };
 
@@ -40,11 +40,11 @@ function TestbenchTab({ servicesMap, onEndpointChange }) {
 
 function TableTab({ onEndpointSelect, style }) {
 
-   let history = useHistory();
-   
+   let navigate = useNavigate();
+
    let handleSelect = function (service) {
       onEndpointSelect(service);
-      history.push(`/client/${encodeURIComponent(service.endpoint)}`);
+      navigate(`/client/${encodeURIComponent(service.endpoint)}`);
    };
 
    return (<div className="tabContent" style={style}>
@@ -97,16 +97,11 @@ export default class App extends React.Component {
             <TabLink to="/" title="Services" exact="true" />
             <TabLink to="/client/" title="Test bench 1.0" />
         </ul>
-        <Switch>
-           <Route path="/client/:endpoint">
-             <TestbenchTab servicesMap={this.state.servicesMap} onEndpointChange={this.onEndpointSelect} />
-           </Route>
-           <Route path="/client/">
-             <TestbenchTab servicesMap={this.state.servicesMap} onEndpointChange={this.onEndpointSelect} />
-           </Route>
-        </Switch>
-        <Route exact path="/" children={({ match }) =>
-          <TableTab onEndpointSelect={this.onEndpointSelect}  style={{display: match ? 'block' : 'none'}} />} />
+        <Routes>
+           <Route path="/client/:endpoint" element={<TestbenchTab servicesMap={this.state.servicesMap} onEndpointChange={this.onEndpointSelect} />} />
+           <Route path="/client/" element={<TestbenchTab servicesMap={this.state.servicesMap} onEndpointChange={this.onEndpointSelect} />} />
+           <Route path="/" element={<TableTab onEndpointSelect={this.onEndpointSelect} />} />
+        </Routes>
       </div>
     </HashRouter>
     );

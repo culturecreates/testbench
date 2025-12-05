@@ -1,11 +1,6 @@
 
 import React from 'react';
-import Form from 'react-bootstrap/lib/Form';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import ControlLabel from 'react-bootstrap/lib/ControlLabel';
-import HelpBlock from 'react-bootstrap/lib/HelpBlock';
-import Col from 'react-bootstrap/lib/Col';
+import { Form, Col } from 'react-bootstrap';
 import fetchJsonp from 'fetch-jsonp';
 import ReconciliationService from './ReconciliationService.js';
 
@@ -15,11 +10,8 @@ export default class ReconciliationServiceInput extends React.Component {
     service: this.props.initialService
   };
 
-  componentWillMount() {
-     this.timer = null;
-  }
-
   componentDidMount() {
+    this.timer = null;
     console.log('hey do we need to validate');
     console.log(this.props.initialService);
     if (this.props.initialService.endpoint && !this.props.initialService.manifest) {
@@ -109,16 +101,26 @@ export default class ReconciliationServiceInput extends React.Component {
   }
 
   render() {
+     const validationState = this.getValidationState();
+     const isValid = validationState === 'success';
+     const isInvalid = validationState === 'error';
+
      return (
-        <Form horizontal onSubmit={(e) => this.handleSubmit(e)}>
-          <FormGroup controlId="endpointField" validationState={this.getValidationState()}>
-            <Col componentClass={ControlLabel} sm={1}>Endpoint:</Col>
+        <Form onSubmit={(e) => this.handleSubmit(e)}>
+          <Form.Group controlId="endpointField" className="mb-3">
+            <Form.Label column sm={1}>Endpoint:</Form.Label>
             <Col sm={11}>
-                <FormControl type="text" value={this.state.service.endpoint} placeholder="URL of the reconciliation service endpoint" onChange={e => this.handleChange(e)}/>
-                <FormControl.Feedback />
-                <HelpBlock>{this.getMessage()}</HelpBlock>
+                <Form.Control
+                  type="text"
+                  value={this.state.service.endpoint}
+                  placeholder="URL of the reconciliation service endpoint"
+                  onChange={e => this.handleChange(e)}
+                  isValid={isValid}
+                  isInvalid={isInvalid}
+                />
+                {isInvalid && <Form.Control.Feedback type="invalid">{this.getMessage()}</Form.Control.Feedback>}
             </Col>
-          </FormGroup>
+          </Form.Group>
         </Form>
      );
   }

@@ -1,21 +1,11 @@
 import React from 'react';
-import Alert from 'react-bootstrap/lib/Alert';
-import Tabs from 'react-bootstrap/lib/Tabs';
-import Tab from 'react-bootstrap/lib/Tab';
-import Form from 'react-bootstrap/lib/Form';
-import FormGroup from 'react-bootstrap/lib/FormGroup';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import Radio from 'react-bootstrap/lib/Radio';
-import Button from 'react-bootstrap/lib/Button';
-import Col from 'react-bootstrap/lib/Col';
-import ControlLabel from 'react-bootstrap/lib/ControlLabel';
-import ListGroup from 'react-bootstrap/lib/ListGroup';
+import { Alert, Tabs, Tab, Form, Button, Col, ListGroup } from 'react-bootstrap';
 import ReconcileSuggest from './ReconcileSuggest.js';
 import Candidate from './Candidate.js';
 import GenericInput from './GenericInput.js';
 import PreviewRenderer from './PreviewRenderer.js';
 import DataExtensionTab from './DataExtensionTab.js';
-import JSONTree from 'react-json-tree';
+import { JSONTree } from 'react-json-tree';
 import { getSchema } from './JsonValidator.js';
 import { jsonTheme } from './utils.js';
 import PropertyMappingV2 from './PropertyMappingV2.js';
@@ -283,7 +273,7 @@ export default class TestBench extends React.Component {
   renderTypeChoices() {
     let current = this.state.reconType;
     let choices = this.defaultTypes.map(t =>
-       <Radio
+       <Form.Check type="radio"
           name="reconcileType"
           key={"key_"+t.id}
           value={t.id}
@@ -291,10 +281,10 @@ export default class TestBench extends React.Component {
           onChange={this.onReconTypeChange}>
         {t.name}<br />
         {Array.isArray(t.broader) && t.broader.length > 0 && <span className="reconTypeId">{t.broader.map(e => e.id).join(', ')} &gt; </span>}<span className="reconTypeId">{t.id}</span>
-      </Radio>
+      </Form.Check>
     );
     if (this.hasTypeSuggest) {
-       choices.push(<Radio
+       choices.push(<Form.Check type="radio"
          name="reconcileType"
          key="custom-type"
          value="custom-type"
@@ -309,14 +299,14 @@ export default class TestBench extends React.Component {
                 value={this.state.reconCustomType}
                 onChange={this.onCustomTypeChange} />
            </div>
-        </Radio>);
+        </Form.Check>);
     }
-    choices.push(<Radio
+    choices.push(<Form.Check type="radio"
         name="reconcileType"
         key="no-type"
         value="no-type"
         checked={current === 'no-type'}
-        onChange={this.onReconTypeChange}>Reconcile against no particular type</Radio>);
+        onChange={this.onReconTypeChange}>Reconcile against no particular type</Form.Check>);
     return choices;
   }
 
@@ -329,12 +319,12 @@ export default class TestBench extends React.Component {
                 <div className="tabContent">
                 <Col sm={5}>
                     <Form horizontal>
-                        <FormGroup controlId={"conditions"}>
-                            <Col componentClass={ControlLabel} sm={2}>{"Conditions:"}</Col>
+                        <Form.Group controlId={"conditions"}>
+                            <Col componentClass={Form.Label} sm={2}>{"Conditions:"}</Col>
                            <Col sm={10}>
                            <Row>
                             <Col>
-                                <FormControl
+                                <Form.Control
                                     type="text"
                                     placeholder={"Name"}
                                     value={this.state.reconQuery}
@@ -350,36 +340,36 @@ export default class TestBench extends React.Component {
                             </Col>
                             </Row>
                             </Col>
-                        </FormGroup>
+                        </Form.Group>
                             
-                        <FormGroup controlId="reconcileType">
-                            <Col componentClass={ControlLabel} sm={2}>Type:</Col>
+                        <Form.Group controlId="reconcileType">
+                            <Col componentClass={Form.Label} sm={2}>Type:</Col>
                             <Col sm={10}>
                                 {this.renderTypeChoices()}
                             </Col>
-                        </FormGroup>
+                        </Form.Group>
 
 
-                        <FormGroup controlId="reconcileLimit">
-                            <Col componentClass={ControlLabel} sm={2}>Limit:</Col>
+                        <Form.Group controlId="reconcileLimit">
+                            <Col componentClass={Form.Label} sm={2}>Limit:</Col>
                             <Col sm={10}>
-                            <FormControl
+                            <Form.Control
                                     type="number"
                                     placeholder="Maximum number of candidates"
                                     value={this.state.reconLimit}
                                     onChange={(v) => this.onReconLimitChange(v)} />
                             </Col>
-                        </FormGroup>
-                        <FormGroup controlId="reconUserLanguage" style={{ display: "flex",alignItems: "flex-end" }}>
-                            <Col sm={2} componentClass={ControlLabel}>User interface language:</Col>
+                        </Form.Group>
+                        <Form.Group controlId="reconUserLanguage" style={{ display: "flex",alignItems: "flex-end" }}>
+                            <Col sm={2} componentClass={Form.Label}>User interface language:</Col>
                             <Col sm={10}>
-                            <FormControl
+                            <Form.Control
                                     type="text"
                                     placeholder="Enter the language of the intended audience"
                                     value={this.state.reconUserLanguage}
                                     onChange={(v) => this.onReconUserLanguageChange(v)} />
                             </Col>
-                        </FormGroup>
+                        </Form.Group>
 
                      <Col sm={3} smOffset={5}> <Button onClick={this.onSubmitReconciliation} type="submit" bsStyle="primary" disabled={!this.props.service}>Reconcile</Button></Col>
                         
@@ -404,24 +394,24 @@ export default class TestBench extends React.Component {
             <Tab eventKey="suggest" title="Suggest">
                 <div className="tabContent">
                 <Form horizontal>
-                    <FormGroup controlId="suggestEntityTestBench">
-                        <Col componentClass={ControlLabel} sm={1}>Entity:</Col>
+                    <Form.Group controlId="suggestEntityTestBench">
+                        <Col componentClass={Form.Label} sm={1}>Entity:</Col>
                         <Col sm={11}>
                             <ReconcileSuggest service={this.props.service} entityClass="entity" id="entity-suggest-test" />
                         </Col>
-                    </FormGroup>
-                    <FormGroup controlId="suggestTypeTestBench">
-                        <Col componentClass={ControlLabel} sm={1}>Type:</Col>
+                    </Form.Group>
+                    <Form.Group controlId="suggestTypeTestBench">
+                        <Col componentClass={Form.Label} sm={1}>Type:</Col>
                         <Col sm={11}>
                             <ReconcileSuggest service={this.props.service} entityClass="type" id="type-suggest-test" />
                         </Col>
-                    </FormGroup>
-                    <FormGroup controlId="suggestPropertyTestBench">
-                        <Col componentClass={ControlLabel} sm={1}>Property:</Col>
+                    </Form.Group>
+                    <Form.Group controlId="suggestPropertyTestBench">
+                        <Col componentClass={Form.Label} sm={1}>Property:</Col>
                         <Col sm={11}>
                             <PropertyPathInput service={this.props.service} id="property-suggest-test" />
                         </Col>
-                    </FormGroup>
+                    </Form.Group>
                 </Form>
                 </div>
             </Tab>
@@ -430,12 +420,12 @@ export default class TestBench extends React.Component {
                 {(this.hasPreviewService ?
                   <div>
                     <Form horizontal>
-                        <FormGroup controlId="suggestEntityTestBench">
-                            <Col componentClass={ControlLabel} sm={1}>Entity:</Col>
+                        <Form.Group controlId="suggestEntityTestBench">
+                            <Col componentClass={Form.Label} sm={1}>Entity:</Col>
                             <Col sm={11}>
                                 <GenericInput service={this.props.service} entityClass="entity" id="entity-input-preview" explicitSubmit onChange={this.onPreviewEntityChange} />
                             </Col>
-                        </FormGroup>
+                        </Form.Group>
                     </Form>
                     <PreviewRenderer id={this.state.previewEntityId} settings={this.props.service.manifest.preview} />
                  </div>

@@ -1,10 +1,6 @@
 import React from "react";
-import FormControl from "react-bootstrap/lib/FormControl";
-import Button from "react-bootstrap/lib/Button";
-import ControlLabel from "react-bootstrap/lib/ControlLabel";
-import Checkbox from "react-bootstrap/lib/Checkbox";
+import { Form, Button, Col } from "react-bootstrap";
 import PropertyPathInput from "./PropertyPathInput.js";
-import { Col } from "react-bootstrap";
 
 
 //Support for version 1.0-draft of the reconcile spec
@@ -85,7 +81,7 @@ export default class PropertyMappingV2 extends React.Component {
 
         <div style={{ marginLeft: "20px" }}>
           <div style={{ marginBottom: "8px" }}>
-            <FormControl
+            <Form.Control
               componentClass="select"
               value={mapping.operator || "all"}
               onChange={(e) =>
@@ -98,11 +94,11 @@ export default class PropertyMappingV2 extends React.Component {
                   {op}
                 </option>
               ))}
-            </FormControl>
+            </Form.Control>
           </div>
 
           <div style={{ marginBottom: "8px", paddingRight: "30px" }}>
-            <FormControl
+            <Form.Control
               type="text"
               placeholder="Property value"
               value={mapping.value || ""}
@@ -113,7 +109,7 @@ export default class PropertyMappingV2 extends React.Component {
           {mapping.additionalValues &&
             mapping.additionalValues.map((additionalValue, valueIdx) => (
               <div key={`value-${valueIdx}`} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center", paddingRight: "30px" }}>
-                <FormControl
+                <Form.Control
                   type="text"
                   placeholder="Property value"
                   value={additionalValue}
@@ -136,14 +132,14 @@ export default class PropertyMappingV2 extends React.Component {
           {/* Required checkbox and + value button */}
           <div style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "center", paddingRight: "30px" }}>
             <div style={{ flex: 1 }}>
-              <Checkbox
+              <Form.Check type="checkbox"
                 checked={mapping.required || false}
                 onChange={(e) =>
                   this.onFieldChange(idx, "required", e.target.checked)
                 }
               >
                 Required
-              </Checkbox>
+              </Form.Check>
             </div>
 
             <Button
@@ -157,9 +153,9 @@ export default class PropertyMappingV2 extends React.Component {
 
           {mapping.qualifier !== undefined && (
             <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-              <ControlLabel style={{ fontSize: "12px", color: "#666" }}>Qualifier:</ControlLabel>
+              <Form.Label style={{ fontSize: "12px", color: "#666" }}>Qualifier:</Form.Label>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <FormControl
+                <Form.Control
                   id={`qualifier-value-${idx}`}
                   componentClass="select"
                   value={mapping.qualifier}
@@ -173,7 +169,7 @@ export default class PropertyMappingV2 extends React.Component {
                       {qualifier?.name}
                     </option>
                   ))}
-                </FormControl>
+                </Form.Control>
                 <Button
                   onClick={() =>
                     this.onFieldChange(idx, "qualifier", undefined)

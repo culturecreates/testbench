@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Button from 'react-bootstrap/lib/Button';
+import { Button } from 'react-bootstrap';
 import FeatureCell from './FeatureCell.js';
 import fetchJsonp from 'fetch-jsonp';
 import ReconciliationService from './ReconciliationService.js';

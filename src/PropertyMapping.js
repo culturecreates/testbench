@@ -1,7 +1,6 @@
 
 import React from 'react';
-import FormControl from 'react-bootstrap/lib/FormControl';
-import Button from 'react-bootstrap/lib/Button';
+import { Form, Button } from 'react-bootstrap';
 import GenericInput from './GenericInput.js';
 
 export default class PropertyMapping extends React.Component {
@@ -57,7 +56,7 @@ export default class PropertyMapping extends React.Component {
                    onChange={v => this.onPropertyChange(idx, v)} />
             </div>
             <div style={{display: 'inline-block', width: '45%'}}>
-                <FormControl
+                <Form.Control
                    type="text"
                    placeholder="Type a value"
                    value={mapping.value || ''}

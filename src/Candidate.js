@@ -1,6 +1,5 @@
 import React from "react";
-import Badge from "react-bootstrap/lib/Badge";
-import ListGroupItem from "react-bootstrap/lib/ListGroupItem";
+import { Badge, ListGroup } from "react-bootstrap";
 
 export default class Candidate extends React.Component {
   get url() {
@@ -78,12 +77,14 @@ export default class Candidate extends React.Component {
     const { candidate } = this.props;
 
     return (
-      <ListGroupItem
+      <ListGroup.Item
         key={candidate.id}
-        header={candidate.name}
         active={candidate.match}
       >
-        <Badge style={{ float: "right" }}>{candidate.score}</Badge>
+        <div className="d-flex w-100 justify-content-between">
+          <h5 className="mb-1">{candidate.name}</h5>
+          <Badge bg="primary">{candidate.score}</Badge>
+        </div>
         <div>
           <div className="candidateField">ID</div>
           <div className="candidateValue">
@@ -93,7 +94,7 @@ export default class Candidate extends React.Component {
           {this.renderTypes()}
           {this.renderFeatures()}
         </div>
-      </ListGroupItem>
+      </ListGroup.Item>
     );
   }
 }

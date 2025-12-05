@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link, useRouteMatch } from 'react-router-dom';
+import { Link, useMatch, useResolvedPath } from 'react-router-dom';
 
 export default function TabLink({ to, title, exact }) {
-     const isActive = useRouteMatch({path: to, exact: exact});
+     const resolved = useResolvedPath(to);
+     const isActive = useMatch({ path: resolved.pathname, end: exact === 'true' });
      const className = isActive ? 'active' : '';
 
      return (
