@@ -29,4 +29,9 @@ export default defineConfig({
   resolve: {
     extensions: ['.mjs', '.js', '.jsx', '.json'],
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
+  },
 });
