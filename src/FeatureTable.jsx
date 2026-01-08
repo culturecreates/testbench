@@ -27,6 +27,7 @@ export default class FeatureTable extends React.Component {
          services: [],
          showAddServiceDialog: false,
          refreshing: false,
+         serviceVersions: {},
        };
 
        this.sparql_query = (
@@ -86,6 +87,20 @@ export default class FeatureTable extends React.Component {
        this.refreshServicesFromWD('GET');
     }
 
+    handleVersionDetected = (endpoint, version) => {
+       this.setState(prevState => ({
+         serviceVersions: {
+           ...prevState.serviceVersions,
+           [endpoint]: version
+         }
+       }));
+    }
+
+    isVersion1x = (version) => {
+       if (!version) return false;
+       return version.startsWith('1.');
+    }
+
     loadAllJsonp = () => {
        this.setState({
         services: this.state.services.map(row => { row.useJsonp(); return row })
@@ -132,7 +147,12 @@ export default class FeatureTable extends React.Component {
              </tr>
            </thead>
            <tbody>
-              {this.state.services.map(
+              {this.state.services
+                .filter(row => {
+                  const version = this.state.serviceVersions[row.endpoint];
+                  return version === undefined || this.isVersion1x(version);
+                })
+                .map(
                 row => <FeatureRow
                         endpoint={row.endpoint}
                         name={row.name}
@@ -141,6 +161,7 @@ export default class FeatureTable extends React.Component {
                         wd_uri={row.wd_uri}
                         jsonp={row.jsonp}
                         onSelect={this.props.onSelect}
+                        onVersionDetected={this.handleVersionDetected}
                         key={row.wd_uri+' '+row.endpoint+(row.jsonp ? ' jsonp' : ' cors')} />)
                }
            </tbody>
