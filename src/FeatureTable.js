@@ -96,9 +96,9 @@ export default class FeatureTable extends React.Component {
        }));
     }
 
-    isVersion02 = (version) => {
+    isVersion0x = (version) => {
        if (!version) return false;
-       return version === '0.2';
+       return version.startsWith('0.');
     }
 
     loadAllJsonp = () => {
@@ -150,7 +150,7 @@ export default class FeatureTable extends React.Component {
               {this.state.services
                 .filter(row => {
                   const version = this.state.serviceVersions[row.endpoint];
-                  return version === undefined || this.isVersion02(version);
+                  return version === undefined || this.isVersion0x(version);
                 })
                 .map(
                 row => <FeatureRow
