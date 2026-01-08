@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.css": "/testbench/0.2/static/css/main.0e314cbb.css",
-    "main.js": "/testbench/0.2/static/js/main.972419b9.js",
+    "main.css": "/testbench/0.2/static/css/main.6e43f3c4.css",
+    "main.js": "/testbench/0.2/static/js/main.473fcd06.js",
     "static/media/glyphicons-halflings-regular.svg": "/testbench/0.2/static/media/glyphicons-halflings-regular.060b2710bdbbe3dfe48b.svg",
     "static/media/glyphicons-halflings-regular.ttf": "/testbench/0.2/static/media/glyphicons-halflings-regular.4692b9ec53fd5972caa2.ttf",
     "static/media/glyphicons-halflings-regular.woff": "/testbench/0.2/static/media/glyphicons-halflings-regular.82b1212e45a2bc35dd73.woff",
     "static/media/glyphicons-halflings-regular.eot": "/testbench/0.2/static/media/glyphicons-halflings-regular.5be1347c682810f199c7.eot",
     "static/media/glyphicons-halflings-regular.woff2": "/testbench/0.2/static/media/glyphicons-halflings-regular.be810be3a3e14c682a25.woff2",
     "index.html": "/testbench/0.2/index.html",
-    "main.0e314cbb.css.map": "/testbench/0.2/static/css/main.0e314cbb.css.map",
-    "main.972419b9.js.map": "/testbench/0.2/static/js/main.972419b9.js.map"
+    "main.6e43f3c4.css.map": "/testbench/0.2/static/css/main.6e43f3c4.css.map",
+    "main.473fcd06.js.map": "/testbench/0.2/static/js/main.473fcd06.js.map"
   },
   "entrypoints": [
-    "static/css/main.0e314cbb.css",
-    "static/js/main.972419b9.js"
+    "static/css/main.6e43f3c4.css",
+    "static/js/main.473fcd06.js"
   ]
 }
