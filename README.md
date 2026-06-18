@@ -26,8 +26,16 @@ You will also see any lint errors in the console.
 
 ### `npm test`
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Runs the test suite once using Vitest.
+
+
+### `npm run test:coverage`
+
+Runs the test suite and generates a coverage report.
+
+### `npm run lint`
+
+Runs ESLint on the source files.
 
 ### `npm run build`
 
