@@ -3,13 +3,17 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ReconciliationServiceInput from './ReconciliationServiceInput';
 
 describe('ReconciliationServiceInput', () => {
+  let originalFetch;
+
   beforeEach(() => {
+    originalFetch = globalThis.fetch;
     vi.useFakeTimers();
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    globalThis.fetch = originalFetch;
   });
 
   it('validates endpoint after debounce and notifies parent with parsed service', async () => {
@@ -38,7 +42,7 @@ describe('ReconciliationServiceInput', () => {
     const input = screen.getByLabelText(/endpoint:/i);
     fireEvent.change(input, { target: { value: endpoint } });
 
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
 
     await waitFor(() => {
       expect(globalThis.fetch).toHaveBeenCalledWith(endpoint);
@@ -67,7 +71,7 @@ describe('ReconciliationServiceInput', () => {
     const input = screen.getByLabelText(/endpoint:/i);
     fireEvent.change(input, { target: { value: endpoint } });
 
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
 
     await waitFor(() => {
       expect(screen.getByText(/the endpoint must return a json document describing the service, accessible via cors/i)).toBeInTheDocument();
