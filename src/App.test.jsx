@@ -2,7 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
+let originalFetch;
+
 beforeEach(() => {
+  originalFetch = globalThis.fetch;
+  window.location.hash = '#/';
   globalThis.fetch = vi.fn().mockResolvedValue({
     json: vi.fn().mockResolvedValue({
       results: {
@@ -14,6 +18,8 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  globalThis.fetch = originalFetch;
+  window.location.hash = '#/';
 });
 
 it('starts up and renders the main navigation', () => {
