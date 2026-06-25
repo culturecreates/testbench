@@ -22,6 +22,11 @@ export default class ReconciliationServiceInput extends React.Component {
     }
   }
 
+   componentWillUnmount() {
+      clearTimeout(this.timer);
+      this.timer = null;
+   }
+
   setService(service) {
      this.setState({
         service: service
