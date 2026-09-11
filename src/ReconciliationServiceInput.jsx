@@ -109,7 +109,7 @@ export default class ReconciliationServiceInput extends React.Component {
           <FormGroup controlId="endpointField" validationState={this.getValidationState()}>
             <Col componentClass={ControlLabel} sm={1}>Endpoint:</Col>
             <Col sm={11}>
-                <FormControl type="text" value={this.state.service.endpoint} placeholder="URL of the reconciliation service endpoint" onChange={e => this.handleChange(e)}/>
+                <FormControl type="text" value={this.state.service.endpoint} placeholder="URL of the reconciliation service endpoint (https:// is assumed if omitted)" onChange={e => this.handleChange(e)}/>
                 <FormControl.Feedback />
                 <HelpBlock>{this.getMessage()}</HelpBlock>
             </Col>

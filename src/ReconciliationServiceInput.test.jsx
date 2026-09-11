@@ -78,4 +78,36 @@ describe('ReconciliationServiceInput', () => {
       expect(onChange).toHaveBeenCalledWith(undefined, undefined);
     });
   });
+
+  it('defaults the endpoint to https:// when no protocol is specified', async () => {
+    const onChange = vi.fn();
+    const typedEndpoint = 'example.org/reconcile';
+    const manifest = { name: 'Example service' };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue(manifest),
+    });
+
+    render(
+      <ReconciliationServiceInput
+        initialService={{ endpoint: '' }}
+        onChange={onChange}
+      />,
+    );
+
+    const input = screen.getByLabelText(/endpoint:/i);
+    fireEvent.change(input, { target: { value: typedEndpoint } });
+
+    expect(input.value).toBe('https://example.org/reconcile');
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledWith('https://example.org/reconcile');
+      expect(onChange).toHaveBeenCalledTimes(1);
+    });
+
+    const serviceArg = onChange.mock.calls[0][0];
+    expect(serviceArg.endpoint).toBe('https://example.org/reconcile');
+  });
 });

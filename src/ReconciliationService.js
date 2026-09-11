@@ -5,7 +5,7 @@ import { getSchema } from './JsonValidator.js';
 
 export default class ReconciliationService {
     constructor(endpoint, manifest) {
-       this.endpoint = endpoint;
+       this.endpoint = ReconciliationService.normalizeEndpoint(endpoint);
        this.manifest = manifest;
 
        // test the service's manifest against manifest schemas
@@ -26,6 +26,19 @@ export default class ReconciliationService {
 
     postFetcher() {
       return postParams;
+   }
+
+   // If the endpoint is missing a protocol (e.g. "www.example.com/api"),
+   // default it to https:// so users don't have to type it explicitly.
+   static normalizeEndpoint(endpoint) {
+      if (typeof endpoint !== 'string') {
+         return endpoint;
+      }
+      let trimmed = endpoint.trim();
+      if (trimmed === '' || /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) {
+         return trimmed;
+      }
+      return `https://${trimmed}`;
    }
 }
 
