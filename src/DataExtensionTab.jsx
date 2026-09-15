@@ -57,6 +57,7 @@ export default class DataExtensionTab extends React.Component {
       if (!baseUrl) {
          return '#';
       }
+      baseUrl = `${baseUrl.replace(/\/$/, '')}/extend`;
       let params = {
         extend: JSON.stringify(this.formulateQuery())
       };
@@ -78,8 +79,9 @@ export default class DataExtensionTab extends React.Component {
   submitQuery = (e) => {
         e.preventDefault();
         this.setState({extendResults: 'fetching'});
-        let fetcher = this.props.service.getFetcher();
-        fetcher(this.formulateQueryUrl(), {timeout: 20000})
+        let fetcher = this.props.service.postFetcher();
+        let url = `${this.props.service.endpoint.replace(/\/$/, '')}/extend`;
+        fetcher({url, queries: JSON.stringify(this.formulateQuery())})
            .then(result => result.json())
            .then(result =>
                this.setState({
@@ -99,6 +101,31 @@ export default class DataExtensionTab extends React.Component {
         return <div/>;
   }
 
+  getExtendedValues() {
+        const results = this.state.extendResults;
+        const entityId = this.state.entity.id;
+        const propertyId = this.state.property.id;
+        if (!results || results.rows === undefined) {
+             return undefined;
+        }
+        // 1.0-draft: rows is an array of { id, properties: [{ id, values }] }
+        if (Array.isArray(results.rows)) {
+             const row = results.rows.find(r => r.id === entityId);
+             if (!row || !Array.isArray(row.properties)) {
+                  return undefined;
+             }
+             // The service may echo the property id in a normalized form, so
+             // fall back to the first (and only) requested property.
+             const prop = row.properties.find(p => p.id === propertyId) || row.properties[0];
+             return prop ? prop.values : undefined;
+        }
+        // Legacy: rows is an object map rows[entityId][propertyId]
+        if (results.rows[entityId] === undefined) {
+             return undefined;
+        }
+        return results.rows[entityId][propertyId];
+  }
+
   renderQueryResults() {
         if (this.state.extendResults === 'fetching') {
              return (<div className="resultsPlaceholder">Querying the service...</div>);
@@ -110,13 +137,10 @@ export default class DataExtensionTab extends React.Component {
              if (this.state.extendResults.rows === undefined) {
                   return (<span className="resultsPlaceholder">No <code>rows</code> attribute in the response.</span>);
              }
-             if (this.state.extendResults.rows[this.state.entity.id] === undefined) {
-                  return (<span className="resultsPlaceholder">Missing <code>rows.{this.state.entity.id}</code> object in the response.</span>);
+             const values = this.getExtendedValues();
+             if (values === undefined) {
+                  return (<span className="resultsPlaceholder">Missing values for <code>{this.state.entity.id}</code> / <code>{this.state.property.id}</code> in the response.</span>);
              }
-             if (this.state.extendResults.rows[this.state.entity.id][this.state.property.id] === undefined) {
-                  return (<span className="resultsPlaceholder">Missing <code>rows.{this.state.entity.id}{this.state.property.id}</code> object in the response.</span>);
-             }
-             const values = this.state.extendResults.rows[this.state.entity.id][this.state.property.id];
              if (values.length === 0) {
                   return (<span className="noResults">No results</span>);
              }

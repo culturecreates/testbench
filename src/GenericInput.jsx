@@ -14,7 +14,8 @@ export default class GenericInput extends React.Component {
     constructor() {
         super();
         this.state = {
-           value: undefined
+           value: undefined,
+           manualEntry: false
         }
     }
 
@@ -35,7 +36,11 @@ export default class GenericInput extends React.Component {
     }
 
     get placeholder() {
-        return this.props.entityClass + ' id'
+        return this.props.entityClass + ' id or URI'
+    }
+
+    get isSearchingByName() {
+        return this.hasAutocomplete && !this.state.manualEntry;
     }
 
     get currentValue() {
@@ -81,36 +86,56 @@ export default class GenericInput extends React.Component {
         e.preventDefault();
     }
 
-    render() {
-        return (this.hasAutocomplete ?
-            (<ReconcileSuggest
-                service={this.props.service}
-                entityClass={this.props.entityClass}
-                onChange={this.onSuggestChange}
-                value={this.currentValue}
-                placeholder={this.props.placeholder}
-                allowNew={this.props.allowNew}
-            />)
-          : (
-                (this.props.explicitSubmit !== undefined ?
-                <InputGroup>
-                   <FormControl
-                      type="text"
-                      placeholder={this.placeholder}
-                      value={this.currentId || ''}
-                      onChange={this.onIdChange} />
-                    <InputGroup.Button>
-                        <Button onClick={this.onSubmit} type="submit" bsStyle="primary">Submit</Button>
-                    </InputGroup.Button>
-                </InputGroup>
-                :
-                   <FormControl
-                      type="text"
-                      placeholder={this.placeholder}
-                      value={this.currentId || ''}
-                      onChange={this.onIdChange} />
+    toggleManualEntry = () => {
+        this.setState(prevState => ({ manualEntry: !prevState.manualEntry }));
+    }
 
-             )
-        ));
+    render() {
+        const searchingByName = this.isSearchingByName;
+        return (
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                    {searchingByName ?
+                        (<ReconcileSuggest
+                            service={this.props.service}
+                            entityClass={this.props.entityClass}
+                            onChange={this.onSuggestChange}
+                            value={this.currentValue}
+                            placeholder={this.props.placeholder}
+                            allowNew={this.props.allowNew}
+                        />)
+                      : (
+                            (this.props.explicitSubmit !== undefined ?
+                            <InputGroup>
+                               <FormControl
+                                  type="text"
+                                  placeholder={this.placeholder}
+                                  value={this.currentId || ''}
+                                  onChange={this.onIdChange} />
+                                <InputGroup.Button>
+                                    <Button onClick={this.onSubmit} type="submit" bsStyle="primary">Submit</Button>
+                                </InputGroup.Button>
+                            </InputGroup>
+                            :
+                               <FormControl
+                                  type="text"
+                                  placeholder={this.placeholder}
+                                  value={this.currentId || ''}
+                                  onChange={this.onIdChange} />
+
+                         )
+                    )}
+                </div>
+                {this.hasAutocomplete &&
+                    <Button
+                        bsStyle="link"
+                        onClick={this.toggleManualEntry}
+                        title={searchingByName ? 'Enter an identifier or URI directly instead of searching by name' : 'Search for an entity by name instead'}
+                        style={{ marginLeft: 8, whiteSpace: 'nowrap' }}>
+                        {searchingByName ? 'Enter ID/URI' : 'Search by name'}
+                    </Button>
+                }
+            </div>
+        );
     }
 }
