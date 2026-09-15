@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/lib/Form';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
 import FormControl from 'react-bootstrap/lib/FormControl';
 import Radio from 'react-bootstrap/lib/Radio';
+import Checkbox from 'react-bootstrap/lib/Checkbox';
 import Button from 'react-bootstrap/lib/Button';
 import Col from 'react-bootstrap/lib/Col';
 import ControlLabel from 'react-bootstrap/lib/ControlLabel';
@@ -28,6 +29,8 @@ export default class TestBench extends React.Component {
 
     this.state = {
         reconQuery: '',
+        reconQueryMatchType: 'name',
+        reconQueryRequired: false,
         reconType: 'no-type',
         reconCustomType: undefined,
         reconProperties: [],
@@ -47,6 +50,18 @@ export default class TestBench extends React.Component {
   onReconQueryChange = (e) => {
     this.setState({
         reconQuery: e.currentTarget.value
+    });
+  }
+
+  onReconQueryMatchTypeChange = (e) => {
+    this.setState({
+        reconQueryMatchType: e.currentTarget.value
+    });
+  }
+
+  onReconQueryRequiredChange = (e) => {
+    this.setState({
+        reconQueryRequired: e.currentTarget.checked
     });
   }
 
@@ -215,7 +230,13 @@ export default class TestBench extends React.Component {
     const buildConditions = () => {
       let conditions =
         this.state.reconQuery && this.state.reconQuery.trim() !== ""
-          ? [{ matchType: "name", propertyValue: this.state.reconQuery }]
+          ? [
+              {
+                matchType: this.state.reconQueryMatchType,
+                propertyValue: this.state.reconQuery,
+                ...(this.state.reconQueryRequired ? { required: true } : {})
+              }
+            ]
           : [];
 
       if (hasReconProperties) {
@@ -334,11 +355,28 @@ export default class TestBench extends React.Component {
                            <Col sm={10}>
                            <Row>
                             <Col>
-                                <FormControl
-                                    type="text"
-                                    placeholder={"Name"}
-                                    value={this.state.reconQuery}
-                                    onChange={this.onReconQueryChange} />
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <FormControl
+                                        componentClass="select"
+                                        value={this.state.reconQueryMatchType}
+                                        onChange={this.onReconQueryMatchTypeChange}
+                                        style={{ width: "80px" }}>
+                                        <option value="name">name</option>
+                                        <option value="id">id</option>
+                                    </FormControl>
+                                    <FormControl
+                                        type="text"
+                                        placeholder={this.state.reconQueryMatchType === "id" ? "URI / ID" : "Name"}
+                                        value={this.state.reconQuery}
+                                        onChange={this.onReconQueryChange}
+                                        style={{ flex: 1 }} />
+                                    <Checkbox
+                                        checked={this.state.reconQueryRequired}
+                                        onChange={this.onReconQueryRequiredChange}
+                                        style={{ margin: 0, whiteSpace: "nowrap" }}>
+                                        Required
+                                    </Checkbox>
+                                </div>
 
                                     
                             
