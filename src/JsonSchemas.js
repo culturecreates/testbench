@@ -5848,6 +5848,10 @@ export const specSchemas = {
                   "type": "string",
                   "description": "Name of the matchQualifier"
                 },
+                "description": {
+                  "type": "string",
+                  "description": "An optional description guiding the user on how to format the value for this matchQualifier"
+                },
                 "lang": {
                   "$ref": "lang.json"
                 },
