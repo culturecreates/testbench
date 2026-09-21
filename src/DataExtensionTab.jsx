@@ -1,13 +1,13 @@
 import React from 'react';
 import Form from 'react-bootstrap/lib/Form';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
+import FormControl from 'react-bootstrap/lib/FormControl';
 import InputGroup from 'react-bootstrap/lib/InputGroup';
 import Button from 'react-bootstrap/lib/Button';
 import Col from 'react-bootstrap/lib/Col';
 import ControlLabel from 'react-bootstrap/lib/ControlLabel';
 import ListGroup from 'react-bootstrap/lib/ListGroup';
 import GenericInput from './GenericInput';
-import PropertyPathInput from './PropertyPathInput';
 import DataExtensionValue from './DataExtensionValue';
 import JSONTree from 'react-json-tree';
 import {jsonTheme} from './utils';
@@ -20,6 +20,7 @@ export default class DataExtensionTab extends React.Component {
       this.state = {
         entity: undefined,
         property: undefined,
+        contentSetting: 'literal',
         extendResults: undefined,
         validationErrors: []
       };
@@ -41,11 +42,22 @@ export default class DataExtensionTab extends React.Component {
       });
   }
 
+  onContentSettingChange = (e) => {
+      this.setState({
+          contentSetting: e.target.value,
+          extendResults: undefined,
+          validationErrors: []
+      });
+  }
+
   formulateQuery() {
       if (this.state.entity !== undefined && this.state.property !== undefined) {
           return {
             ids: [this.state.entity.id],
-            properties: [{id: this.state.property.id}]
+            properties: [{
+              id: this.state.property.id,
+              settings: {content: this.state.contentSetting}
+            }]
           };
       } else {
           return {};
@@ -71,6 +83,7 @@ export default class DataExtensionTab extends React.Component {
         this.setState({
                 entity: undefined,
                 property: undefined,
+                contentSetting: 'literal',
                 extendResults: undefined,
                 validationErrors: undefined
         });
@@ -181,11 +194,26 @@ export default class DataExtensionTab extends React.Component {
                 <FormGroup controlId="dataExtensionProperty">
                     <Col componentClass={ControlLabel} sm={2}>Property:</Col>
                     <Col sm={10}>
-                            <PropertyPathInput
+                            <GenericInput
                                 service={this.props.service}
-                                id="data-extension-property"
+                                placeholder="Property to fetch"
                                 value={this.state.property}
+                                entityClass="property"
+                                hideManualToggle
                                 onChange={this.onPropertyChange} />
+                    </Col>
+                </FormGroup>
+                <FormGroup controlId="dataExtensionContent">
+                    <Col componentClass={ControlLabel} sm={2}>Content:</Col>
+                    <Col sm={10}>
+                            <FormControl
+                                componentClass="select"
+                                value={this.state.contentSetting}
+                                onChange={this.onContentSettingChange}>
+                                <option value="literal">literal</option>
+                                <option value="id">id</option>
+                                <option value="expand">expand</option>
+                            </FormControl>
                     </Col>
                 </FormGroup>
                 <FormGroup controlId="submitGroup">

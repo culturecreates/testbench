@@ -126,7 +126,7 @@ export default class GenericInput extends React.Component {
                          )
                     )}
                 </div>
-                {this.hasAutocomplete &&
+                {this.hasAutocomplete && !this.props.hideManualToggle &&
                     <Button
                         bsStyle="link"
                         onClick={this.toggleManualEntry}
