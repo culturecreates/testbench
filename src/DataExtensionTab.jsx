@@ -28,14 +28,17 @@ export default class DataExtensionTab extends React.Component {
       };
   }
 
+  componentDidUpdate(prevProps) {
+      if (prevProps.service !== this.props.service && this.state.proposeType !== undefined) {
+          this.setState({proposeType: undefined});
+      }
+  }
+
   onProposeTypeChange = (e) => {
       this.setState({proposeType: e.target.value});
   }
 
   proposeTypeName(id) {
-      // defaultTypes ids are CURIEs (e.g. "schema:Event"); the propose
-      // endpoint expects the local name only (e.g. "Event"). Leave full
-      // URIs (http://…) untouched.
       if (/^[A-Za-z][\w.-]*:(?!\/\/)/.test(id)) {
           return id.substring(id.indexOf(':') + 1);
       }
@@ -61,7 +64,7 @@ export default class DataExtensionTab extends React.Component {
           return null;
       }
       try {
-          const url = new URL(base);
+          const url = new URL(base, this.props.service.endpoint);
           url.searchParams.set('type', this.state.proposeType);
           return url.toString();
       } catch (e) {
