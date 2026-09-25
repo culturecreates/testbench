@@ -189,7 +189,10 @@ export default class TestBench extends React.Component {
      }
      return {
         summary: 'The service rejected the request for the following reasons:',
-        items: messages.map(m => this.humanizeMessage(m).summary)
+        items: messages.reduce((acc, m) => {
+           let humanized = this.humanizeMessage(m);
+           return acc.concat(humanized.summary, humanized.items);
+        }, [])
      };
   }
 
