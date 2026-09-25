@@ -185,6 +185,16 @@ export default class PropertyMappingV2 extends React.Component {
                   <span className="glyphicon glyphicon-trash"></span>
                 </Button>
               </div>
+              {(() => {
+                const selectedQualifier = mapping?.property?.matchQualifiers?.find(
+                  (qualifier) => qualifier?.id === mapping.qualifier
+                );
+                return selectedQualifier?.description ? (
+                  <div style={{ fontSize: "12px", color: "#666", marginTop: "4px", fontStyle: "italic" }}>
+                    {selectedQualifier.description}
+                  </div>
+                ) : null;
+              })()}
             </div>
           )}
 
