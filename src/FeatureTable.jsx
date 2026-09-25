@@ -3,6 +3,7 @@ import Table from 'react-bootstrap/lib/Table';
 import Modal from 'react-bootstrap/lib/Modal';
 import Button from 'react-bootstrap/lib/Button';
 import FeatureRow from './FeatureRow';
+import ReconciliationService from './ReconciliationService';
 
 class Row {
     constructor(endpoint, name, documentation, source_url, wd_uri) {
@@ -23,8 +24,15 @@ export default class FeatureTable extends React.Component {
          showAddServiceDialog: false,
          refreshing: false,
          serviceVersions: {},
+         manifests: {},
          showTables: false,
        };
+
+       this._isMounted = false;
+       this._timeouts = [];
+       this._abortController = null;
+       this._fetchedEndpoints = new Set();
+       this._manifestControllers = [];
 
        this.sparql_query = (
         "SELECT ?service ?serviceLabel ?endpoint ?documentation ?source WHERE {\n" +
@@ -40,17 +48,23 @@ export default class FeatureTable extends React.Component {
     }
 
     refreshServicesFromWD = (method) => {
+       this._manifestControllers.forEach(controller => controller.abort());
+       this._manifestControllers = [];
+       this._fetchedEndpoints = new Set();
        this.setState({
          refreshing: true,
          showTables: false,
-         serviceVersions: {}
+         serviceVersions: {},
+         manifests: {}
        });
        let url = new URL("https://query.wikidata.org/sparql");
        let params = {query:this.sparql_query, format: 'json'};
        let promise = null;
+       this._abortController = new AbortController();
+       let signal = this._abortController.signal;
        if (method === 'GET') {
          Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-         promise = fetch(url);
+         promise = fetch(url, { signal });
        } else {
          var urlParams = new URLSearchParams();
          Object.keys(params).forEach(key => urlParams.append(key, params[key]));
@@ -60,44 +74,114 @@ export default class FeatureTable extends React.Component {
            cache: 'no-cache',
            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
            body: urlParams,
+           signal,
          });
        }
 
        promise
         .then(result => result.json())
         .then(result => {
-            this.setState({
-              services: result.results.bindings.map(entry =>
+            const services = result.results.bindings.map(entry =>
                 new Row(entry.endpoint.value, entry.serviceLabel.value,
                     'documentation' in entry ? entry.documentation.value : undefined,
                     'source' in entry ? entry.source.value : undefined,
-                    entry.service.value)),
+                    entry.service.value));
+            this.safeSetState({
+              services,
               refreshing: false
            });
 
-           setTimeout(() => {
-             this.setState({ showTables: true });
-           }, 1500);
+           const uniqueEndpoints = [...new Set(services.map(row => row.endpoint))];
+           uniqueEndpoints.forEach(this.fetchManifest);
+
+           this._timeouts.push(setTimeout(() => {
+             this.safeSetState({ showTables: true });
+           }, 1500));
         })
         .catch(error => {
+           if (error.name === 'AbortError') {
+             return;
+           }
            console.log(error);
-           this.setState({
+           this.safeSetState({
              refreshing: false,
              showTables: true
            });
         });
     }
 
+    safeSetState = (...args) => {
+       if (this._isMounted) {
+         this.setState(...args);
+       }
+    }
+
+    fetchManifest = (endpoint) => {
+       if (this._fetchedEndpoints.has(endpoint)) {
+         return;
+       }
+       this._fetchedEndpoints.add(endpoint);
+
+       const controller = new AbortController();
+       this._manifestControllers.push(controller);
+       let didTimeout = false;
+       const timeoutId = setTimeout(() => {
+         didTimeout = true;
+         controller.abort();
+       }, 20000);
+       this._timeouts.push(timeoutId);
+
+       fetch(endpoint, { signal: controller.signal })
+        .then(response => response.json())
+        .then(manifest => {
+           clearTimeout(timeoutId);
+           this.safeSetState(prevState => ({
+             manifests: {
+               ...prevState.manifests,
+               [endpoint]: { reacheableCORS: true, manifest, corsTimeout: false }
+             }
+           }));
+           const service = new ReconciliationService(endpoint, manifest);
+           this.handleVersionDetected(endpoint, service.latestCompatibleVersion);
+        })
+        .catch(error => {
+           clearTimeout(timeoutId);
+           // Aborts that are not our 20s timeout come from unmount/refresh: ignore them.
+           if (error.name === 'AbortError' && !didTimeout) {
+             return;
+           }
+           this.safeSetState(prevState => ({
+             manifests: {
+               ...prevState.manifests,
+               [endpoint]: { reacheableCORS: false, manifest: {}, corsTimeout: didTimeout }
+             }
+           }));
+           this.handleVersionDetected(endpoint, didTimeout ? 'timeout' : null);
+        });
+    }
+
     componentDidMount() {
+       this._isMounted = true;
        this.refreshServicesFromWD('GET');
 
-       setTimeout(() => {
-         this.setState({ showTables: true });
-       }, 1500);
+       this._timeouts.push(setTimeout(() => {
+         this.safeSetState({ showTables: true });
+       }, 1500));
+    }
+
+    componentWillUnmount() {
+       this._isMounted = false;
+       this._timeouts.forEach(clearTimeout);
+       this._timeouts = [];
+       if (this._abortController) {
+         this._abortController.abort();
+       }
+       this._manifestControllers.forEach(controller => controller.abort());
+       this._manifestControllers = [];
     }
 
     handleVersionDetected = (endpoint, version) => {
-       this.setState(prevState => ({
+       this.safeSetState(prevState => ({
          serviceVersions: {
            ...prevState.serviceVersions,
            [endpoint]: version
@@ -153,6 +237,8 @@ export default class FeatureTable extends React.Component {
     }
 
     renderFeatureRow = (row) => {
+       const info = this.state.manifests[row.endpoint] ||
+         { reacheableCORS: 'checking', manifest: {}, corsTimeout: false };
        return (
          <FeatureRow
            endpoint={row.endpoint}
@@ -161,7 +247,9 @@ export default class FeatureTable extends React.Component {
            source_url={row.source_url}
            wd_uri={row.wd_uri}
            onSelect={this.props.onSelect}
-           onVersionDetected={this.handleVersionDetected}
+           reacheableCORS={info.reacheableCORS}
+           manifest={info.manifest}
+           corsTimeout={info.corsTimeout}
            timedOut={row.timedOut}
            key={row.wd_uri + ' ' + row.endpoint}
          />

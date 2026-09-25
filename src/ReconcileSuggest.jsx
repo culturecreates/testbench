@@ -7,6 +7,8 @@ const suggestPathMap = {
   type: '/suggest/type',
 };
 
+let nextReconcileSuggestId = 0;
+
 export default class ReconcileSuggest extends React.Component {
    constructor() {
      super();
@@ -15,6 +17,26 @@ export default class ReconcileSuggest extends React.Component {
         suggestions: [],
         isLoading: false,
      };
+     this._isMounted = false;
+     this._instanceId = ++nextReconcileSuggestId;
+   }
+
+   componentDidMount() {
+     this._isMounted = true;
+   }
+
+   componentWillUnmount() {
+     this._isMounted = false;
+   }
+
+   safeSetState = (...args) => {
+     if (this._isMounted) {
+       this.setState(...args);
+     }
+   }
+
+   get componentId() {
+     return this.props.id || `reconcile-suggest-${this._instanceId}`;
    }
 
    getValue() {
@@ -62,19 +84,24 @@ export default class ReconcileSuggest extends React.Component {
       if (url === null) {
          return;
       }
-      this.setState({isLoading: true});
+      this.safeSetState({isLoading: true});
       let fetcher = this.props.service.getFetcher();
       fetcher(url, params)
         .then(result => result.json())
         .then(result => {
-           this.setState({suggestions: result.result, isLoading: false})})
+           const suggestions = (Array.isArray(result.result) ? result.result : []).map(option => ({
+              ...option,
+              name: (option.name != null ? option.name : option.id) || ''
+           }));
+           this.safeSetState({suggestions, isLoading: false});
+        })
           .catch(() => {
-           this.setState({isLoading: false});
+           this.safeSetState({isLoading: false});
         });
    };
 
    onSuggestionsClearRequested = () => {
-      this.setState({suggestions:[]});
+      this.safeSetState({suggestions:[]});
    };
 
    onChange = (newValue) => {
@@ -112,14 +139,14 @@ export default class ReconcileSuggest extends React.Component {
 
    render() {
       return (
-        <AsyncTypeahead id={this.props.id}
+        <AsyncTypeahead id={this.componentId}
            placeholder={this.props.placeholder}
            disabled={this.getUrl() === null}
            isLoading={this.state.isLoading}
            onSearch={this.onSuggestionsFetchRequested}
            onInputChange={this.onInputChange}
            options={this.state.suggestions}
-           labelKey="name"
+           labelKey={(option) => (option && (option.name || option.id)) || ''}
            filterBy={() => true}
            selected={this.getValue() ? [this.getValue()] : []}
            onChange={this.onChange}
