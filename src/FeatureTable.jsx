@@ -51,6 +51,8 @@ export default class FeatureTable extends React.Component {
        this._manifestControllers.forEach(controller => controller.abort());
        this._manifestControllers = [];
        this._fetchedEndpoints = new Set();
+       this._timeouts.forEach(clearTimeout);
+       this._timeouts = [];
        this.setState({
          refreshing: true,
          showTables: false,

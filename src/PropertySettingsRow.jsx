@@ -48,8 +48,9 @@ export default class PropertySettingsRow extends React.Component {
         </div>
 
         <div style={{ marginLeft: "20px" }}>
-          <ControlLabel style={{ fontSize: "12px", color: "#666" }}>Content:</ControlLabel>
+          <ControlLabel htmlFor={"dataExtensionContent-" + index} style={{ fontSize: "12px", color: "#666" }}>Content:</ControlLabel>
           <FormControl
+            id={"dataExtensionContent-" + index}
             componentClass="select"
             value={content}
             onChange={this.onContentChange}

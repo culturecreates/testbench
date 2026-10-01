@@ -167,17 +167,14 @@ export default class DataExtensionTab extends React.Component {
                   return map;
              }
              const requestedProperties = this.state.properties.filter(p => p.id && (p.id.id || p.id));
+             const requestedIds = new Set(requestedProperties.map(p => p.id.id || p.id));
              row.properties.forEach((prop, idx) => {
                  if (prop.values) {
-                     // Try exact match first, then fall back to position-based matching
-                     // since the service may return normalized property IDs
-                     let matchKey = prop.id;
                      const requestedProp = requestedProperties[idx];
-                     if (requestedProp) {
-                         const requestedId = requestedProp.id.id || requestedProp.id;
-                         // Use requested ID as key for consistent mapping
-                         matchKey = requestedId;
-                     }
+                     const requestedId = requestedProp && (requestedProp.id.id || requestedProp.id);
+                     const matchKey = requestedIds.has(prop.id)
+                         ? prop.id
+                         : (requestedId || prop.id);
                      map[matchKey] = prop.values;
                  }
              });

@@ -146,7 +146,7 @@ export default class ReconcileSuggest extends React.Component {
            onSearch={this.onSuggestionsFetchRequested}
            onInputChange={this.onInputChange}
            options={this.state.suggestions}
-           labelKey={(option) => (option && (option.name || option.id)) || ''}
+           labelKey="name"
            filterBy={() => true}
            selected={this.getValue() ? [this.getValue()] : []}
            onChange={this.onChange}
@@ -156,7 +156,7 @@ export default class ReconcileSuggest extends React.Component {
               if (option.customOption) {
                 return (
                   <>
-                    <span className="suggestItemLabel">{option.label}</span>
+                    <span className="suggestItemLabel">{option.name}</span>
                   </>
                 );
               }
