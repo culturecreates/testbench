@@ -10,6 +10,7 @@ import ListGroup from 'react-bootstrap/lib/ListGroup';
 import GenericInput from './GenericInput';
 import DataExtensionValue from './DataExtensionValue';
 import JSONTree from 'react-json-tree';
+import PropertySettingsRow from './PropertySettingsRow';
 import {jsonTheme} from './utils';
 import { getSchema } from './JsonValidator';
 
@@ -19,10 +20,10 @@ export default class DataExtensionTab extends React.Component {
       super();
       this.state = {
         entity: undefined,
-        property: undefined,
-        contentSetting: 'literal',
+        properties: [{ id: undefined, settings: { content: 'literal' } }],
         extendResults: undefined,
-        validationErrors: []
+        validationErrors: [],
+        extendError: undefined
       };
   }
 
@@ -30,34 +31,68 @@ export default class DataExtensionTab extends React.Component {
       this.setState({
           entity: newValue,
           extendResults: undefined,
-          validationErrors: []
+          validationErrors: [],
+          extendError: undefined
       });
   }
 
-  onPropertyChange = (newValue) => {
+  addProperty = () => {
+      const newProperties = this.state.properties.slice();
+      newProperties.push({ id: undefined, settings: { content: 'literal' } });
       this.setState({
-          property: newValue,
+          properties: newProperties,
           extendResults: undefined,
-          validationErrors: []
+          validationErrors: [],
+          extendError: undefined
       });
   }
 
-  onContentSettingChange = (e) => {
+  removeProperty = (index) => {
+      if (this.state.properties.length <= 1) {
+          return;
+      }
+      const newProperties = this.state.properties.slice();
+      newProperties.splice(index, 1);
       this.setState({
-          contentSetting: e.target.value,
+          properties: newProperties,
           extendResults: undefined,
-          validationErrors: []
+          validationErrors: [],
+          extendError: undefined
       });
+  }
+
+  onPropertyChange = (index, field, value) => {
+      const newProperties = this.state.properties.slice();
+      if (field === 'id') {
+          newProperties[index] = { ...newProperties[index], id: value };
+      } else if (field === 'settings.content') {
+          newProperties[index] = { 
+              ...newProperties[index], 
+              settings: { ...newProperties[index].settings, content: value } 
+          };
+      }
+      this.setState({
+          properties: newProperties,
+          extendResults: undefined,
+          validationErrors: [],
+          extendError: undefined
+      });
+  }
+
+  hasValidProperties() {
+      return this.state.properties.some(p => p.id && (p.id.id || p.id));
   }
 
   formulateQuery() {
-      if (this.state.entity !== undefined && this.state.property !== undefined) {
+      if (this.state.entity !== undefined && this.hasValidProperties()) {
           return {
             ids: [this.state.entity.id],
-            properties: [{
-              id: this.state.property.id,
-              settings: {content: this.state.contentSetting}
-            }]
+            properties: this.state.properties
+              .filter(p => p.id && (p.id.id || p.id))
+              .map(p => ({
+                id: p.id.id || p.id,
+                settings: { content: p.settings?.content || 'literal' }
+              }))
           };
       } else {
           return {};
@@ -82,16 +117,19 @@ export default class DataExtensionTab extends React.Component {
         e.preventDefault();
         this.setState({
                 entity: undefined,
-                property: undefined,
-                contentSetting: 'literal',
+                properties: [{ id: undefined, settings: { content: 'literal' } }],
                 extendResults: undefined,
-                validationErrors: undefined
+                validationErrors: undefined,
+                extendError: undefined
         });
   }
 
   submitQuery = (e) => {
         e.preventDefault();
-        this.setState({extendResults: 'fetching'});
+        if (!this.state.entity || !this.hasValidProperties()) {
+            return;
+        }
+        this.setState({extendResults: 'fetching', extendError: undefined});
         let fetcher = this.props.service.postFetcher();
         let url = `${this.props.service.endpoint.replace(/\/$/, '')}/extend`;
         fetcher({url, queries: JSON.stringify(this.formulateQuery())})
@@ -99,13 +137,14 @@ export default class DataExtensionTab extends React.Component {
            .then(result =>
                this.setState({
                   extendResults: result,
-                  validationErrors: this.validateServiceResponse(result)
+                  validationErrors: this.validateServiceResponse(result),
+                  extendError: undefined
                })
            )
            .catch(e => {
               this.setState({
-                                extendResults: 'failed',
-                extendError: e.message
+                  extendResults: 'failed',
+                  extendError: e.message
               });
            });
   }
@@ -114,29 +153,43 @@ export default class DataExtensionTab extends React.Component {
         return <div/>;
   }
 
-  getExtendedValues() {
+  getExtendedValuesMap() {
         const results = this.state.extendResults;
         const entityId = this.state.entity.id;
-        const propertyId = this.state.property.id;
         if (!results || results.rows === undefined) {
-             return undefined;
+             return {};
         }
+        const map = {};
         // 1.0-draft: rows is an array of { id, properties: [{ id, values }] }
         if (Array.isArray(results.rows)) {
              const row = results.rows.find(r => r.id === entityId);
              if (!row || !Array.isArray(row.properties)) {
-                  return undefined;
+                  return map;
              }
-             // The service may echo the property id in a normalized form, so
-             // fall back to the first (and only) requested property.
-             const prop = row.properties.find(p => p.id === propertyId) || row.properties[0];
-             return prop ? prop.values : undefined;
+             const requestedProperties = this.state.properties.filter(p => p.id && (p.id.id || p.id));
+             row.properties.forEach((prop, idx) => {
+                 if (prop.values) {
+                     // Try exact match first, then fall back to position-based matching
+                     // since the service may return normalized property IDs
+                     let matchKey = prop.id;
+                     const requestedProp = requestedProperties[idx];
+                     if (requestedProp) {
+                         const requestedId = requestedProp.id.id || requestedProp.id;
+                         // Use requested ID as key for consistent mapping
+                         matchKey = requestedId;
+                     }
+                     map[matchKey] = prop.values;
+                 }
+             });
+        } else {
+             // Legacy: rows is an object map rows[entityId][propertyId]
+             if (results.rows[entityId] !== undefined) {
+                 Object.keys(results.rows[entityId]).forEach(propId => {
+                     map[propId] = results.rows[entityId][propId];
+                 });
+             }
         }
-        // Legacy: rows is an object map rows[entityId][propertyId]
-        if (results.rows[entityId] === undefined) {
-             return undefined;
-        }
-        return results.rows[entityId][propertyId];
+        return map;
   }
 
   renderQueryResults() {
@@ -144,24 +197,51 @@ export default class DataExtensionTab extends React.Component {
              return (<div className="resultsPlaceholder">Querying the service...</div>);
         } else if (this.state.extendResults === 'failed') {
              return (<div className="resultsPlaceholder">Error: {this.state.extendError}</div>);
-        } else if (this.state.extendResults === undefined || this.state.entity === undefined || this.state.property === undefined) {
+        } else if (this.state.extendResults === undefined || this.state.entity === undefined || !this.hasValidProperties()) {
              return (<div />);
         } else {
              if (this.state.extendResults.rows === undefined) {
                   return (<span className="resultsPlaceholder">No <code>rows</code> attribute in the response.</span>);
              }
-             const values = this.getExtendedValues();
-             if (values === undefined) {
-                  return (<span className="resultsPlaceholder">Missing values for <code>{this.state.entity.id}</code> / <code>{this.state.property.id}</code> in the response.</span>);
+             const valuesMap = this.getExtendedValuesMap();
+             const requestedProperties = this.state.properties.filter(p => p.id && (p.id.id || p.id));
+             
+             if (requestedProperties.length === 0) {
+                  return (<span className="noResults">No properties requested</span>);
              }
-             if (values.length === 0) {
+
+             const propertyResults = requestedProperties.map(prop => {
+                 const propId = prop.id.id || prop.id;
+                 const values = valuesMap[propId];
+                 const propertyName = prop.id?.name || propId;
+                 return { propertyName, propId, values: values || [] };
+             });
+
+             const hasAnyValues = propertyResults.some(pr => pr.values.length > 0);
+             if (!hasAnyValues) {
                   return (<span className="noResults">No results</span>);
              }
+
              return (
-                <ListGroup>
-                   {values.map((value, idx) =>
-                        <DataExtensionValue value={value} key={"data-extension-result-"+idx} />)}
-                </ListGroup>);
+                <div>
+                   {propertyResults.map((propResult, propIdx) => (
+                       <div key={propIdx} style={{ marginBottom: '20px' }}>
+                           <h5 style={{ marginBottom: '10px', borderBottom: '1px solid #eee', paddingBottom: '5px' }}>
+                               {propResult.propertyName} <small style={{ color: '#666' }}>({propResult.propId})</small>
+                           </h5>
+                           {propResult.values.length === 0 ? (
+                               <span className="noResults">No values</span>
+                           ) : (
+                               <ListGroup>
+                                   {propResult.values.map((value, valIdx) =>
+                                       <DataExtensionValue value={value} key={"data-extension-result-" + propIdx + "-" + valIdx} />
+                                   )}
+                               </ListGroup>
+                           )}
+                       </div>
+                   ))}
+                </div>
+             );
         }
   }
 
@@ -191,37 +271,42 @@ export default class DataExtensionTab extends React.Component {
                             onChange={this.onEntityChange} />
                     </Col>
                 </FormGroup>
-                <FormGroup controlId="dataExtensionProperty">
-                    <Col componentClass={ControlLabel} sm={2}>Property:</Col>
+                
+                <FormGroup controlId="dataExtensionProperties">
+                    <Col componentClass={ControlLabel} sm={2}>Properties:</Col>
                     <Col sm={10}>
-                            <GenericInput
-                                service={this.props.service}
-                                placeholder="Property to fetch"
-                                value={this.state.property}
-                                entityClass="property"
-                                hideManualToggle
-                                onChange={this.onPropertyChange} />
+                        <div className="property-mapping-container">
+                            <Col>
+                                {this.state.properties.map((property, index) => (
+                                    <PropertySettingsRow
+                                        key={index}
+                                        index={index}
+                                        property={property}
+                                        service={this.props.service}
+                                        onChange={this.onPropertyChange}
+                                        onDelete={this.removeProperty}
+                                    />
+                                ))}
+                            </Col>
+                            <Col>
+                                <Button
+                                    onClick={this.addProperty}
+                                    className="add-button"
+                                    disabled={!this.state.entity}
+                                >
+                                    Add Property
+                                </Button>
+                            </Col>
+                        </div>
                     </Col>
                 </FormGroup>
-                <FormGroup controlId="dataExtensionContent">
-                    <Col componentClass={ControlLabel} sm={2}>Content:</Col>
-                    <Col sm={10}>
-                            <FormControl
-                                componentClass="select"
-                                value={this.state.contentSetting}
-                                onChange={this.onContentSettingChange}>
-                                <option value="literal">literal</option>
-                                <option value="id">id</option>
-                                <option value="expand">expand</option>
-                            </FormControl>
-                    </Col>
-                </FormGroup>
+                
                 <FormGroup controlId="submitGroup">
                         <Col sm={10} />
                         <Col sm={2}>
                             <InputGroup>
-                                <InputGroup.Button><Button onClick={this.resetQuery} type="submit" bsStyle="default">Reset</Button></InputGroup.Button>
-                                <InputGroup.Button><Button onClick={this.submitQuery} type="submit" bsStyle="primary">Submit</Button></InputGroup.Button>
+                                <InputGroup.Button><Button onClick={this.resetQuery} type="button" bsStyle="default">Reset</Button></InputGroup.Button>
+                                <InputGroup.Button><Button onClick={this.submitQuery} type="button" bsStyle="primary" disabled={!this.state.entity || !this.hasValidProperties()}>Submit</Button></InputGroup.Button>
                             </InputGroup>
                         </Col>
                 </FormGroup>
@@ -246,4 +331,3 @@ export default class DataExtensionTab extends React.Component {
     );
   }
 }
-
