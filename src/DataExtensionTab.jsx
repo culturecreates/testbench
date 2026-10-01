@@ -1,6 +1,7 @@
 import React from 'react';
 import Form from 'react-bootstrap/lib/Form';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
+import FormControl from 'react-bootstrap/lib/FormControl';
 import InputGroup from 'react-bootstrap/lib/InputGroup';
 import Button from 'react-bootstrap/lib/Button';
 import Col from 'react-bootstrap/lib/Col';
@@ -20,9 +21,63 @@ export default class DataExtensionTab extends React.Component {
       this.state = {
         entity: undefined,
         property: undefined,
+        contentSetting: 'literal',
+        proposeType: undefined,
         extendResults: undefined,
         validationErrors: []
       };
+  }
+
+  componentDidUpdate(prevProps) {
+      if (prevProps.service !== this.props.service && this.state.proposeType !== undefined) {
+          this.setState({proposeType: undefined});
+      }
+  }
+
+  onProposeTypeChange = (e) => {
+      this.setState({proposeType: e.target.value});
+  }
+
+  proposeTypeName(id) {
+      if (/^[A-Za-z][\w.-]*:(?!\/\/)/.test(id)) {
+          return id.substring(id.indexOf(':') + 1);
+      }
+      return id;
+  }
+
+  formulateProposeUrl() {
+      if (!this.state.proposeType) {
+          return null;
+      }
+      const extend = (this.props.service.manifest && this.props.service.manifest.extend) || {};
+      let base;
+      const propose = extend.propose_properties;
+      if (propose && (propose.service_url || propose.service_path)) {
+          base = (propose.service_url || '') + (propose.service_path || '');
+      } else if (this.props.service.endpoint) {
+          try {
+              base = new URL(this.props.service.endpoint).origin + '/extend/propose';
+          } catch (e) {
+              return null;
+          }
+      } else {
+          return null;
+      }
+      try {
+          const url = new URL(base, this.props.service.endpoint);
+          url.searchParams.set('type', this.state.proposeType);
+          return url.toString();
+      } catch (e) {
+          return null;
+      }
+  }
+
+  openProposeWindow = (e) => {
+      e.preventDefault();
+      const url = this.formulateProposeUrl();
+      if (url) {
+          window.open(url, '_blank', 'noopener,noreferrer');
+      }
   }
 
   onEntityChange = (newValue) => {
@@ -143,6 +198,27 @@ export default class DataExtensionTab extends React.Component {
      <div>
         <Col sm={5}>
             <Form horizontal>
+                <FormGroup controlId="dataExtensionProposeType">
+                    <Col componentClass={ControlLabel} sm={2}>Class:</Col>
+                    <Col sm={10}>
+                        <InputGroup>
+                            <FormControl
+                                componentClass="select"
+                                value={this.state.proposeType || ''}
+                                onChange={this.onProposeTypeChange}>
+                                <option value="" disabled>Select a class…</option>
+                                {((this.props.service.manifest && this.props.service.manifest.defaultTypes) || []).map(t =>
+                                    <option key={t.id} value={this.proposeTypeName(t.id)}>{t.name || t.id}</option>)}
+                            </FormControl>
+                            <InputGroup.Button>
+                                <Button
+                                    bsStyle="default"
+                                    disabled={!this.formulateProposeUrl()}
+                                    onClick={this.openProposeWindow}>View proposed properties</Button>
+                            </InputGroup.Button>
+                        </InputGroup>
+                    </Col>
+                </FormGroup>
                 <FormGroup controlId="dataExtensionEntity">
                     <Col componentClass={ControlLabel} sm={2}>Entity:</Col>
                     <Col sm={10}>
