@@ -7,6 +7,8 @@ import Button from 'react-bootstrap/lib/Button';
 import Col from 'react-bootstrap/lib/Col';
 import ControlLabel from 'react-bootstrap/lib/ControlLabel';
 import ListGroup from 'react-bootstrap/lib/ListGroup';
+import Modal from 'react-bootstrap/lib/Modal';
+import HelpBlock from 'react-bootstrap/lib/HelpBlock';
 import GenericInput from './GenericInput';
 import DataExtensionValue from './DataExtensionValue';
 import JSONTree from 'react-json-tree';
@@ -23,7 +25,8 @@ export default class DataExtensionTab extends React.Component {
         properties: [{ id: undefined, settings: { content: 'literal' } }],
         extendResults: undefined,
         validationErrors: [],
-        extendError: undefined
+        extendError: undefined,
+        showProposeModal: false
       };
   }
 
@@ -35,6 +38,15 @@ export default class DataExtensionTab extends React.Component {
 
   onProposeTypeChange = (e) => {
       this.setState({proposeType: e.target.value});
+  }
+
+  openProposeModal = (e) => {
+      e.preventDefault();
+      this.setState({showProposeModal: true});
+  }
+
+  closeProposeModal = () => {
+      this.setState({showProposeModal: false});
   }
 
   proposeTypeName(id) {
@@ -309,27 +321,6 @@ export default class DataExtensionTab extends React.Component {
      <div>
         <Col sm={5}>
             <Form horizontal>
-                <FormGroup controlId="dataExtensionProposeType">
-                    <Col componentClass={ControlLabel} sm={2}>Class:</Col>
-                    <Col sm={10}>
-                        <InputGroup>
-                            <FormControl
-                                componentClass="select"
-                                value={this.state.proposeType || ''}
-                                onChange={this.onProposeTypeChange}>
-                                <option value="" disabled>Select a class…</option>
-                                {((this.props.service.manifest && this.props.service.manifest.defaultTypes) || []).map(t =>
-                                    <option key={t.id} value={this.proposeTypeName(t.id)}>{t.name || t.id}</option>)}
-                            </FormControl>
-                            <InputGroup.Button>
-                                <Button
-                                    bsStyle="default"
-                                    disabled={!this.formulateProposeUrl()}
-                                    onClick={this.openProposeWindow}>View proposed properties</Button>
-                            </InputGroup.Button>
-                        </InputGroup>
-                    </Col>
-                </FormGroup>
                 <FormGroup controlId="dataExtensionEntity">
                     <Col componentClass={ControlLabel} sm={2}>Entity:</Col>
                     <Col sm={10}>
@@ -368,6 +359,10 @@ export default class DataExtensionTab extends React.Component {
                                 </Button>
                             </Col>
                         </div>
+                        <HelpBlock>
+                            Not sure which properties to use?{' '}
+                            <a href="#" onClick={this.openProposeModal}>Proposed properties</a>
+                        </HelpBlock>
                     </Col>
                 </FormGroup>
                 
@@ -396,6 +391,35 @@ export default class DataExtensionTab extends React.Component {
         <Col sm={4}>
             {this.renderQueryResults()}
         </Col>
+
+        <Modal show={this.state.showProposeModal} onHide={this.closeProposeModal}>
+            <Modal.Header closeButton>
+                <Modal.Title>Browse proposed properties for a class</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <p>
+                    Pick a class to view the properties.
+                </p>
+                <FormGroup controlId="dataExtensionProposeType">
+                    <ControlLabel>Class:</ControlLabel>
+                    <FormControl
+                        componentClass="select"
+                        value={this.state.proposeType || ''}
+                        onChange={this.onProposeTypeChange}>
+                        <option value="" disabled>Select a class…</option>
+                        {((this.props.service.manifest && this.props.service.manifest.defaultTypes) || []).map(t =>
+                            <option key={t.id} value={this.proposeTypeName(t.id)}>{t.name || t.id}</option>)}
+                    </FormControl>
+                </FormGroup>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button bsStyle="default" onClick={this.closeProposeModal}>Close</Button>
+                <Button
+                    bsStyle="primary"
+                    disabled={!this.formulateProposeUrl()}
+                    onClick={this.openProposeWindow}>View proposed properties</Button>
+            </Modal.Footer>
+        </Modal>
 
      </div>
     );
