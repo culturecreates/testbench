@@ -72,9 +72,11 @@ export default class ReconcileSuggest extends React.Component {
    onSuggestionsFetchRequested = (value) => {
       let url = this.getUrl();
 
-      // If building a nested path (contains /), only search for text after last /
+      // Only when building a nested property path (handled by PropertyPathInput)
+      // should we search for the text after the last "/". For entity/type search,
+      // a complete id or URI legitimately contains "/", so it must be sent as-is.
       let searchPrefix = value;
-      if (value && value.includes('/')) {
+      if (this.props.nestedPathSearch && value && value.includes('/')) {
         const lastSlashIndex = value.lastIndexOf('/');
         searchPrefix = value.substring(lastSlashIndex + 1);
       }
