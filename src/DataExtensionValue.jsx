@@ -34,8 +34,6 @@ export default class DataExtensionValue extends React.Component {
             } else if (val.id !== undefined && val.name !== undefined) {
                 return val.name;
             } else if (val.id !== undefined) {
-                // id-only reference, or an expanded entity: prefer a nested name,
-                // otherwise show the identifier itself.
                 return this.nestedName || val.id;
             } else if (val.str !== undefined) {
                 return val.str;
