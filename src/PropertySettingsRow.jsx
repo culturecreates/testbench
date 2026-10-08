@@ -23,9 +23,20 @@ export default class PropertySettingsRow extends React.Component {
     }
   };
 
+  getContentSetting() {
+    const propertySettings =
+      this.props.service?.manifest?.extend?.propertySettings || [];
+    return propertySettings.find((setting) => setting && setting.id === 'content');
+  }
+
   render() {
     const { index, property, service } = this.props;
-    const content = property?.settings?.content || 'literal';
+    const contentSetting = this.getContentSetting();
+    const contentChoices = (contentSetting && contentSetting.choices) || [];
+    const defaultContent =
+      (contentSetting && contentSetting.default) ||
+      (contentChoices[0] && contentChoices[0].value);
+    const content = property?.settings?.content || defaultContent;
 
     return (
       <div key={index} className="mapping-card" style={{ marginBottom: "20px", border: "1px solid #e0e0e0", borderLeft: "3px solid #e0e0e0", padding: "15px", position: "relative" }}>
@@ -56,9 +67,11 @@ export default class PropertySettingsRow extends React.Component {
             onChange={this.onContentChange}
             style={{ width: "120px" }}
           >
-            <option value="literal">literal</option>
-            <option value="id">id</option>
-            <option value="expand">expand</option>
+            {contentChoices.map((choice) => (
+              <option key={choice.value} value={choice.value}>
+                {choice.name || choice.value}
+              </option>
+            ))}
           </FormControl>
         </div>
       </div>

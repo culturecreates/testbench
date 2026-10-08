@@ -28,6 +28,15 @@ export default class DataExtensionTab extends React.Component {
         extendError: undefined,
         showProposeModal: false
       };
+      this._isMounted = false;
+  }
+
+  componentDidMount() {
+      this._isMounted = true;
+  }
+
+  componentWillUnmount() {
+      this._isMounted = false;
   }
 
   componentDidUpdate(prevProps) {
@@ -147,10 +156,29 @@ export default class DataExtensionTab extends React.Component {
       return this.state.properties.some(p => p.id && (p.id.id || p.id));
   }
 
+  normalizeEntityId(id) {
+      if (typeof id !== 'string') {
+          return id;
+      }
+      const value = id.trim();
+      // Only trim full http(s) URIs down to their local identifier
+      // (the last path or fragment segment), e.g.
+      // http://kg.artsdata.ca/resource/K10-496 -> K10-496
+      if (!/^https?:\/\//i.test(value)) {
+          return id;
+      }
+      const withoutTrailing = value.replace(/[/#]+$/, '');
+      const lastSep = Math.max(withoutTrailing.lastIndexOf('/'), withoutTrailing.lastIndexOf('#'));
+      if (lastSep === -1 || lastSep === withoutTrailing.length - 1) {
+          return id;
+      }
+      return withoutTrailing.substring(lastSep + 1);
+  }
+
   formulateQuery() {
       if (this.state.entity !== undefined && this.hasValidProperties()) {
           return {
-            ids: [this.state.entity.id],
+            ids: [this.normalizeEntityId(this.state.entity.id)],
             properties: this.state.properties
               .filter(p => p.id && (p.id.id || p.id))
               .map(p => ({
@@ -198,14 +226,20 @@ export default class DataExtensionTab extends React.Component {
         let url = `${this.props.service.endpoint.replace(/\/$/, '')}/extend`;
         fetcher({url, queries: JSON.stringify(this.formulateQuery())})
            .then(result => result.json())
-           .then(result =>
+           .then(result => {
+               if (!this._isMounted) {
+                   return;
+               }
                this.setState({
                   extendResults: result,
                   validationErrors: this.validateServiceResponse(result),
                   extendError: undefined
-               })
-           )
+               });
+           })
            .catch(e => {
+              if (!this._isMounted) {
+                  return;
+              }
               this.setState({
                   extendResults: 'failed',
                   extendError: e.message
@@ -219,21 +253,21 @@ export default class DataExtensionTab extends React.Component {
 
   getExtendedValuesMap() {
         const results = this.state.extendResults;
-        const entityId = this.state.entity.id;
+        const entityId = this.normalizeEntityId(this.state.entity.id);
         if (!results || results.rows === undefined) {
              return {};
         }
         const map = {};
         // 1.0-draft: rows is an array of { id, properties: [{ id, values }] }
         if (Array.isArray(results.rows)) {
-             const row = results.rows.find(r => r.id === entityId);
+             const row = results.rows.find(r => r && r.id === entityId);
              if (!row || !Array.isArray(row.properties)) {
                   return map;
              }
              const requestedProperties = this.state.properties.filter(p => p.id && (p.id.id || p.id));
              const requestedIds = new Set(requestedProperties.map(p => p.id.id || p.id));
              row.properties.forEach((prop, idx) => {
-                 if (prop.values) {
+                 if (prop && prop.values) {
                      const requestedProp = requestedProperties[idx];
                      const requestedId = requestedProp && (requestedProp.id.id || requestedProp.id);
                      const matchKey = requestedIds.has(prop.id)
