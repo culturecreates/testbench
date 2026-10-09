@@ -7,8 +7,6 @@ import ReconciliationService from './ReconciliationService';
 
 const SPEC_BASE_URL = 'https://reconciliation-api.github.io/specs/1.0-draft/';
 
-// Maps each feature-table column to the relevant section of the reconciliation
-// spec, so developers can jump straight to the reference documentation.
 const COLUMN_HEADERS = [
    { label: 'Name', anchor: 'service-manifest' },
    { label: 'Endpoint', anchor: 'service-definition' },
