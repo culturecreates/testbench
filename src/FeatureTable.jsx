@@ -5,6 +5,23 @@ import Button from 'react-bootstrap/lib/Button';
 import FeatureRow from './FeatureRow';
 import ReconciliationService from './ReconciliationService';
 
+const SPEC_BASE_URL = 'https://reconciliation-api.github.io/specs/1.0-draft/';
+
+// Maps each feature-table column to the relevant section of the reconciliation
+// spec, so developers can jump straight to the reference documentation.
+const COLUMN_HEADERS = [
+   { label: 'Name', anchor: 'service-manifest' },
+   { label: 'Endpoint', anchor: 'service-definition' },
+   { label: 'API version', anchor: 'version-negotiation' },
+   { label: 'CORS', anchor: 'cross-origin-access' },
+   { label: 'View entities', anchor: 'entities' },
+   { label: 'Suggest entities', anchor: 'suggest-services' },
+   { label: 'Suggest types', anchor: 'suggest-services' },
+   { label: 'Suggest properties', anchor: 'suggest-services' },
+   { label: 'Preview entities', anchor: 'preview-service' },
+   { label: 'Extend data', anchor: 'data-extension-service' },
+];
+
 class Row {
     constructor(endpoint, name, documentation, source_url, wd_uri) {
        this.endpoint = endpoint;
@@ -223,16 +240,18 @@ export default class FeatureTable extends React.Component {
        return (
          <thead>
            <tr>
-             <th scope="col">Name</th>
-             <th scope="col">Endpoint</th>
-             <th scope="col">API version</th>
-             <th scope="col">CORS</th>
-             <th scope="col">View entities</th>
-             <th scope="col">Suggest entities</th>
-             <th scope="col">Suggest types</th>
-             <th scope="col">Suggest properties</th>
-             <th scope="col">Preview entities</th>
-             <th scope="col">Extend data</th>
+             {COLUMN_HEADERS.map(({ label, anchor }) => (
+               <th scope="col" key={label}>
+                 <a
+                   href={SPEC_BASE_URL + '#' + anchor}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   title={'Open the "' + label + '" section of the reconciliation spec'}
+                 >
+                   {label}
+                 </a>
+               </th>
+             ))}
            </tr>
          </thead>
        );
