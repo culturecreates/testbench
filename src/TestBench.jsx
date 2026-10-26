@@ -591,7 +591,7 @@ export default class TestBench extends React.Component {
                         <FormGroup controlId="suggestEntityTestBench">
                             <Col componentClass={ControlLabel} sm={1}>Entity:</Col>
                             <Col sm={11}>
-                                <GenericInput service={this.props.service} entityClass="entity" id="entity-input-preview" explicitSubmit onChange={this.onPreviewEntityChange} />
+                                <GenericInput service={this.props.service} entityClass="entity" id="entity-input-preview" explicitSubmit hideManualToggle onChange={this.onPreviewEntityChange} />
                             </Col>
                         </FormGroup>
                     </Form>

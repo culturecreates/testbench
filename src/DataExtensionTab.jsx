@@ -360,9 +360,10 @@ export default class DataExtensionTab extends React.Component {
                     <Col sm={10}>
                         <GenericInput
                             service={this.props.service}
-                            placeholder="Entity to fetch data from"
+                            placeholder="Search by name, or enter an ID/URI"
                             value={this.state.entity}
                             entityClass="entity"
+                            dynamicEntry
                             onChange={this.onEntityChange} />
                     </Col>
                 </FormGroup>

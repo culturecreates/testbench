@@ -153,7 +153,7 @@ export default class ReconcileSuggest extends React.Component {
            selected={this.getValue() ? [this.getValue()] : []}
            onChange={this.onChange}
            allowNew={this.props.allowNew}
-           newSelectionPrefix={this.props.allowNew ? "Use custom path: " : undefined}
+           newSelectionPrefix={this.props.allowNew ? (this.props.newSelectionPrefix || "Use custom path: ") : undefined}
            renderMenuItemChildren={(option) => {
               if (option.customOption) {
                 return (

@@ -92,6 +92,13 @@ export default class GenericInput extends React.Component {
 
     render() {
         const searchingByName = this.isSearchingByName;
+        const dynamicEntry = this.props.dynamicEntry;
+        const allowNew = this.props.allowNew || dynamicEntry;
+        const newSelectionPrefix = this.props.newSelectionPrefix
+            || (dynamicEntry ? 'Use ID/URI: ' : undefined);
+        const showToggle = this.hasAutocomplete
+            && !this.props.hideManualToggle
+            && !dynamicEntry;
         return (
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1 }}>
@@ -102,7 +109,8 @@ export default class GenericInput extends React.Component {
                             onChange={this.onSuggestChange}
                             value={this.currentValue}
                             placeholder={this.props.placeholder}
-                            allowNew={this.props.allowNew}
+                            allowNew={allowNew}
+                            newSelectionPrefix={newSelectionPrefix}
                         />)
                       : (
                             (this.props.explicitSubmit !== undefined ?
@@ -126,7 +134,7 @@ export default class GenericInput extends React.Component {
                          )
                     )}
                 </div>
-                {this.hasAutocomplete && !this.props.hideManualToggle &&
+                {showToggle &&
                     <Button
                         bsStyle="link"
                         onClick={this.toggleManualEntry}
